@@ -33,6 +33,12 @@ export default defineConfig(({ command }) => ({
           // Only `index.vue` files are routes; co-located modules (e.g. HelpModule.vue) are imports.
           filePatterns: ['**/index'],
         },
+        {
+          src: 'src/handoffs',
+          // Without this prefix, [slug]/index.vue becomes /:slug (collides with prototypes).
+          path: 'handoffs/',
+          filePatterns: ['**/index'],
+        },
       ],
       dts: 'src/typed-router.d.ts',
     }),

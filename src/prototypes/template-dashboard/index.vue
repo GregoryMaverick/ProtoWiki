@@ -37,7 +37,13 @@ const MODULE = {
       <div class="template-dashboard-shell">
         <Dashboard>
           <template #banner>
-            <RouterLink :to="HOME" class="dashboard-mobile-banner__feedback">
+            <RouterLink
+              :to="HOME"
+              class="dashboard-mobile-banner__feedback"
+              data-wm-handoff-name="Share feedback (mobile banner)"
+              data-wm-handoff-behavior="Opens feedback flow; mobile-only slot above module stack"
+              data-wm-handoff-production-note="Wire to product feedback URL or in-app survey; not gallery home"
+            >
               Share feedback
             </RouterLink>
           </template>
@@ -48,11 +54,20 @@ const MODULE = {
               :to="HOME"
               :title="MODULE.thankTitle"
               cta="Open module"
+              data-wm-handoff-name="Review changes (mobile primary)"
+              data-wm-handoff-behavior="Tappable card navigates to review/suggestions sub-route"
+              data-wm-handoff-production-note="Replace HOME with real special-page sub-route and live queue state"
             >
               <p class="dashboard-template-placeholder">{{ MODULE.thankBody }}</p>
             </DashboardModule>
 
-            <DashboardModule class="dashboard-slot--mobile-sidebar" :title="MODULE.impactTitle">
+            <DashboardModule
+              class="dashboard-slot--mobile-sidebar"
+              :title="MODULE.impactTitle"
+              data-wm-handoff-name="Your impact (mobile)"
+              data-wm-handoff-behavior="Static card; shows thanks and edits metrics"
+              data-wm-handoff-production-note="Fetch metrics from newcomer impact API; handle loading and empty states"
+            >
               <div class="dashboard-impact-rows">
                 <div class="dashboard-impact-row">
                   <CdxIcon
@@ -85,7 +100,12 @@ const MODULE = {
           </template>
 
           <template #primary>
-            <DashboardModule :title="MODULE.thankTitle">
+            <DashboardModule
+              :title="MODULE.thankTitle"
+              data-wm-handoff-name="Review changes (desktop primary)"
+              data-wm-handoff-behavior="Static primary column module; no RouterLink wrapper"
+              data-wm-handoff-production-note="Embed suggested-edits or review UI; match min-height via dashboard-slot--desktop-primary"
+            >
               <p class="dashboard-template-placeholder">{{ MODULE.thankBody }}</p>
             </DashboardModule>
           </template>
