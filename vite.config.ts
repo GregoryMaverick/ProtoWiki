@@ -35,8 +35,6 @@ export default defineConfig(({ command }) => ({
         },
         {
           src: 'src/handoffs',
-          // Without this prefix, [slug]/index.vue becomes /:slug (collides with prototypes).
-          path: 'handoffs/',
           filePatterns: ['**/index'],
         },
       ],
