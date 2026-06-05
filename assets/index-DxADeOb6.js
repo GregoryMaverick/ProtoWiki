@@ -1,0 +1,1 @@
+import{P as a}from"./PlainWrapper-CG_58pHN.js";import{d as r,c as t,w as p,o as n,a as o}from"./index-2B2Dh5nR.js";const d=r({__name:"index",setup(s){return(i,e)=>(n(),t(a,{heading:"Plain wrapper"},{default:p(()=>[...e[0]||(e[0]=[o("p",null,"Starter template — empty plain wrapper.",-1)])]),_:1}))}});export{d as default};
