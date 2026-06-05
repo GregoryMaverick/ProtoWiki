@@ -4,10 +4,14 @@
   "private": true,
   "type": "module",
   "description": "Tools, strategies, frameworks and resources for prototyping MediaWiki projects.",
+  "engines": {
+    "node": ">=20.20.2",
+    "npm": ">=10.8.2"
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "$npm_node_execpath scripts/dev.mjs",
+    "build": "$npm_node_execpath node_modules/vite/bin/vite.js build",
+    "preview": "$npm_node_execpath node_modules/vite/bin/vite.js preview",
     "type-check": "vue-tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,vue,css}\"",
     "lint": "eslint . --ext .ts,.vue",

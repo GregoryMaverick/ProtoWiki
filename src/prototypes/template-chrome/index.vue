@@ -13,7 +13,13 @@ import ChromeWrapper from '@/components/chrome/ChromeWrapper.vue'
   <ChromeWrapper>
     <main>
       <h1>Chrome wrapper</h1>
-      <p>Starter template — empty chrome wrapper.</p>
+      <p
+        data-wm-handoff-name="Intro paragraph"
+        data-wm-handoff-behavior="Static starter copy for the chrome template"
+        data-wm-handoff-production-note="Replace with real article or special-page content in production"
+      >
+        Starter template — empty chrome wrapper.
+      </p>
     </main>
   </ChromeWrapper>
 </template>

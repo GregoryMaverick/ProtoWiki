@@ -24,6 +24,7 @@ interface PrototypeMeta {
 
 interface PrototypeEntry {
   path: string
+  slug: string
   title: string
   description?: string
   bucket: 'regular' | 'template' | 'example'
@@ -69,8 +70,10 @@ const prototypes = computed<PrototypeEntry[]>(() => {
           ? meta.description
           : undefined
       const title = meta.title ?? humanize(route.path)
+      const slug = route.path.replace(/^\//, '').replace(/\/$/, '')
       return {
         path: route.path,
+        slug,
         title,
         description,
         bucket: prototypeBucket(title),

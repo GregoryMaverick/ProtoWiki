@@ -34,6 +34,17 @@ html {
   scrollbar-gutter: stable;
 }
 
+/*
+ * When the Engineer Mode inspector is open, shrink the app shell so the
+ * prototype is not covered by the fixed right panel.
+ */
+html.protowiki-inspector-open .protowiki-app-shell {
+  box-sizing: border-box;
+  width: calc(100% - var(--protowiki-inspector-width, min(20rem, 100vw)));
+  max-width: calc(100% - var(--protowiki-inspector-width, min(20rem, 100vw)));
+  overflow-x: clip;
+}
+
 body {
   margin: 0;
   padding: 0;
