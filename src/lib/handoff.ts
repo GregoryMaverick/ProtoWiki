@@ -14,30 +14,6 @@ import {
 export type { HandoffComponentInfo, HandoffTokenMatch } from './handoffCodex'
 export { primaryInspectorLabel, resolveInspectableElement } from './handoffCodex'
 
-export type HandoffStatus = 'draft' | 'ready-for-engineering' | 'in-engineering'
-
-export interface PrototypeHandoff {
-  slug: string
-  title: string
-  status: HandoffStatus
-  /** Route to the live prototype, e.g. `/template-chrome`. */
-  prototypeRoute: string
-  goal: string
-  approvedFlows: string[]
-  statesCovered: string[]
-  codexComponents: string[]
-  dataNeeds: string[]
-  accessibilityNotes: string[]
-  prototypeShortcuts: string[]
-  engineeringQuestions: string[]
-  acceptanceCriteria: string[]
-}
-
-/** Route for the engineering handoff page for a slug. */
-export function handoffRouteForSlug(slug: string): string {
-  return `/handoffs/${slug}`
-}
-
 /** Width of the Engineer Mode inspector panel — keep in sync with global layout CSS. */
 export const PROTOWIKI_INSPECTOR_WIDTH = 'min(20rem, 100vw)'
 
@@ -278,29 +254,3 @@ export function inspectHandoffElement(el: Element): HandoffElementInspection {
   }
 }
 
-/** First path segment for top-level prototype routes, or slug from `/handoffs/:slug`. */
-export function prototypeSlugFromPath(path: string): string | null {
-  const segments = path.replace(/^\/|\/$/g, '').split('/').filter(Boolean)
-  if (segments.length === 0) return null
-  if (segments[0] === 'handoffs' && segments.length >= 2) return segments[1]
-  if (segments[0] === 'handoffs') return null
-  return segments[0]
-}
-
-export function createEmptyHandoff(slug: string, title: string): PrototypeHandoff {
-  return {
-    slug,
-    title,
-    status: 'draft',
-    prototypeRoute: `/${slug}`,
-    goal: '',
-    approvedFlows: [],
-    statesCovered: [],
-    codexComponents: [],
-    dataNeeds: [],
-    accessibilityNotes: [],
-    prototypeShortcuts: [],
-    engineeringQuestions: [],
-    acceptanceCriteria: [],
-  }
-}

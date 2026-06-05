@@ -4,14 +4,13 @@ import { computed, ref } from 'vue'
 import { CdxButton, CdxIcon } from '@wikimedia/codex'
 import { cdxIconClose } from '@wikimedia/codex-icons'
 
-import type { HandoffElementInspection, PrototypeHandoff } from '@/lib/handoff'
+import type { HandoffElementInspection } from '@/lib/handoff'
 
 import HandoffInspectorPropRow from './HandoffInspectorPropRow.vue'
 import HandoffInspectorSection from './HandoffInspectorSection.vue'
 
 const props = defineProps<{
   inspection: HandoffElementInspection | null
-  handoff: PrototypeHandoff | null
 }>()
 
 defineEmits<{
@@ -28,14 +27,11 @@ const hasNotes = computed(() => {
 const codexComponent = computed(() => props.inspection?.components.codexComponent ?? null)
 const codexModifiers = computed(() => props.inspection?.components.codexModifiers ?? [])
 const protowikiComponents = computed(() => props.inspection?.components.protowikiComponents ?? [])
-const vueChain = computed(() => props.inspection?.components.vueComponents ?? [])
 
 const layoutCells = computed(() => {
   const layout = props.inspection?.layout
   if (!layout) return []
   return [
-    { label: 'X', value: `${layout.x}px` },
-    { label: 'Y', value: `${layout.y}px` },
     { label: 'W', value: `${layout.width}px` },
     { label: 'H', value: `${layout.height}px` },
   ]
@@ -64,24 +60,6 @@ const typographyEntries = computed(() => {
     { label: 'Align', value: typography.textAlign },
   ]
 })
-
-const colorEntries = computed(() => {
-  const colors = props.inspection?.colors
-  if (!colors) return []
-  return [
-    { label: 'Text', value: colors.color, swatch: colors.color },
-    { label: 'Fill', value: colors.backgroundColor, swatch: colors.backgroundColor },
-    { label: 'Border', value: colors.borderColor, swatch: colors.borderColor },
-    { label: 'Opacity', value: colors.opacity },
-  ]
-})
-
-const styleEntries = computed(() => {
-  if (!props.inspection) return []
-  return Object.entries(props.inspection.styles).map(([label, value]) => ({ label, value }))
-})
-
-const attributeEntries = computed(() => props.inspection?.attributes ?? [])
 
 async function copyValue(value: string) {
   if (!navigator.clipboard) return
@@ -144,15 +122,6 @@ async function copyValue(value: string) {
         >
           {{ name }}<span v-if="index < protowikiComponents.length - 1" aria-hidden="true"> · </span>
         </button>
-      </p>
-
-      <p v-if="vueChain.length" class="handoff-inspector-panel__chain">
-        <template v-for="(name, index) in vueChain" :key="`${name}-${index}`">
-          <button type="button" class="handoff-inspector-panel__chain-item" @click="copyValue(name)">
-            {{ name }}
-          </button>
-          <span v-if="index < vueChain.length - 1" class="handoff-inspector-panel__chain-sep">›</span>
-        </template>
       </p>
     </div>
 
@@ -238,92 +207,6 @@ async function copyValue(value: string) {
         />
       </HandoffInspectorSection>
 
-      <HandoffInspectorSection title="Colors">
-        <button
-          v-for="entry in colorEntries"
-          :key="entry.label"
-          type="button"
-          class="handoff-inspector-prop-row handoff-inspector-panel__color-row"
-          @click="copyValue(entry.value)"
-        >
-          <span class="handoff-inspector-prop-row__label">{{ entry.label }}</span>
-          <span class="handoff-inspector-prop-row__value handoff-inspector-prop-row__value--mono">
-            <span
-              v-if="entry.swatch"
-              class="handoff-inspector-panel__swatch"
-              :style="{ backgroundColor: entry.swatch }"
-              aria-hidden="true"
-            />
-            {{ entry.value }}
-          </span>
-        </button>
-        <HandoffInspectorPropRow
-          v-if="inspection.colors.contrastRatio"
-          label="Contrast"
-          :value="inspection.colors.contrastRatio"
-          @copy="copyValue"
-        />
-      </HandoffInspectorSection>
-
-      <HandoffInspectorSection title="Accessibility">
-        <HandoffInspectorPropRow label="Tag" :value="inspection.tagName" @copy="copyValue" />
-        <HandoffInspectorPropRow
-          v-if="inspection.id"
-          label="ID"
-          :value="inspection.id"
-          @copy="copyValue"
-        />
-        <HandoffInspectorPropRow
-          v-if="inspection.role"
-          label="Role"
-          :value="inspection.role"
-          @copy="copyValue"
-        />
-        <HandoffInspectorPropRow
-          v-if="inspection.ariaLabel"
-          label="aria-label"
-          :value="inspection.ariaLabel"
-          @copy="copyValue"
-        />
-        <HandoffInspectorPropRow
-          v-if="inspection.text"
-          label="Text"
-          :value="inspection.text"
-          :mono="false"
-          @copy="copyValue"
-        />
-        <HandoffInspectorPropRow
-          label="Selector"
-          :value="inspection.selectorPath"
-          @copy="copyValue"
-        />
-      </HandoffInspectorSection>
-
-      <HandoffInspectorSection v-if="attributeEntries.length" title="DOM attributes">
-        <HandoffInspectorPropRow
-          v-for="attr in attributeEntries"
-          :key="attr.name"
-          :label="attr.name"
-          :value="attr.value"
-          @copy="copyValue"
-        />
-      </HandoffInspectorSection>
-
-      <HandoffInspectorSection title="Raw styles">
-        <HandoffInspectorPropRow
-          v-for="entry in styleEntries"
-          :key="entry.label"
-          :label="entry.label"
-          :value="entry.value"
-          @copy="copyValue"
-        />
-      </HandoffInspectorSection>
-
-      <div v-if="handoff" class="handoff-inspector-panel__handoff-footer">
-        <p class="handoff-inspector-panel__handoff-title">{{ handoff.title }}</p>
-        <p class="handoff-inspector-panel__handoff-status">{{ handoff.status }}</p>
-        <p v-if="handoff.goal" class="handoff-inspector-panel__handoff-goal">{{ handoff.goal }}</p>
-      </div>
     </div>
 
     <Transition name="handoff-inspector-panel__toast">
@@ -380,25 +263,21 @@ async function copyValue(value: string) {
 
 .handoff-inspector-panel__hero {
   flex-shrink: 0;
-  padding: var(--spacing-100);
+  padding: var(--spacing-100) var(--spacing-100) var(--spacing-75);
   border-bottom: 1px solid var(--border-color-subtle);
-  background: linear-gradient(
-    180deg,
-    var(--background-color-progressive-subtle) 0%,
-    var(--background-color-base) 100%
-  );
+  background: var(--background-color-neutral-subtle);
 }
 
 .handoff-inspector-panel__component-name {
   display: block;
   width: 100%;
-  margin: 0;
+  margin: 0 0 var(--spacing-25);
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--color-progressive);
   font-family: var(--font-family-monospace);
-  font-size: 1.125rem;
+  font-size: var(--font-size-large);
   font-weight: var(--font-weight-bold);
   line-height: 1.25;
   text-align: left;
@@ -531,10 +410,11 @@ async function copyValue(value: string) {
 }
 
 .handoff-inspector-panel__box-model {
-  margin: 0 var(--spacing-50);
-  padding: var(--spacing-25);
+  margin: var(--spacing-50) var(--spacing-50) var(--spacing-75);
+  padding: 0;
   border-radius: var(--border-radius-base);
-  background: var(--background-color-neutral-subtle);
+  background: color-mix(in srgb, var(--background-color-warning-subtle, #ffcc33) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color-warning, #fc3) 50%, transparent);
   font-family: var(--font-family-monospace);
   font-size: 0.6875rem;
   text-align: center;
@@ -554,8 +434,8 @@ async function copyValue(value: string) {
 }
 
 .handoff-inspector-panel__padding-box {
-  border: 1px solid color-mix(in srgb, var(--border-color-warning) 55%, transparent);
-  background: color-mix(in srgb, var(--border-color-warning) 8%, transparent);
+  background: color-mix(in srgb, var(--background-color-success-subtle, #14866d) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color-success, #14866d) 40%, transparent);
 }
 
 .handoff-inspector-panel__content-box {
@@ -563,54 +443,10 @@ async function copyValue(value: string) {
   align-items: center;
   justify-content: center;
   min-height: 2.5rem;
-  border: 1px solid var(--border-color-progressive);
-  background: var(--background-color-base);
+  background: color-mix(in srgb, var(--background-color-progressive-subtle, #eaf3ff) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color-progressive, #36c) 40%, transparent);
   color: var(--color-progressive);
   font-weight: var(--font-weight-bold);
-}
-
-.handoff-inspector-panel__color-row {
-  align-items: center;
-}
-
-.handoff-inspector-panel__color-row .handoff-inspector-prop-row__value {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-50);
-}
-
-.handoff-inspector-panel__swatch {
-  box-sizing: border-box;
-  width: 0.875rem;
-  height: 0.875rem;
-  flex: 0 0 auto;
-  border: 1px solid var(--border-color-subtle);
-  border-radius: 2px;
-}
-
-.handoff-inspector-panel__handoff-footer {
-  margin: var(--spacing-100);
-  padding: var(--spacing-75);
-  border-radius: var(--border-radius-base);
-  background: var(--background-color-neutral-subtle);
-}
-
-.handoff-inspector-panel__handoff-title {
-  margin: 0;
-  font-weight: var(--font-weight-bold);
-}
-
-.handoff-inspector-panel__handoff-status {
-  margin: var(--spacing-25) 0 0;
-  color: var(--color-subtle);
-  font-size: var(--font-size-x-small);
-  text-transform: capitalize;
-}
-
-.handoff-inspector-panel__handoff-goal {
-  margin: var(--spacing-50) 0 0;
-  font-size: var(--font-size-x-small);
-  line-height: var(--line-height-small);
 }
 
 .handoff-inspector-panel__toast {

@@ -15,8 +15,7 @@
     "type-check": "vue-tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,vue,css}\"",
     "lint": "eslint . --ext .ts,.vue",
-    "snapshot:wiki-skins": "bash scripts/snapshot-wiki-skins.sh",
-    "handoff:new": "node scripts/create-handoff.mjs"
+    "snapshot:wiki-skins": "bash scripts/snapshot-wiki-skins.sh"
   },
   "dependencies": {
     "@wikimedia/codex": "^2.5.1",

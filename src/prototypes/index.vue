@@ -14,8 +14,6 @@ import { cdxIconSettings } from '@wikimedia/codex-icons'
 
 import PlainWrapper from '@/components/PlainWrapper.vue'
 import PrototypeUserSettingsPopover from '@/components/PrototypeUserSettingsPopover.vue'
-import { handoffRouteForSlug } from '@/lib/handoff'
-import { hasHandoff } from '@/lib/handoffRegistry'
 
 const router = useRouter()
 
@@ -30,8 +28,6 @@ interface PrototypeEntry {
   title: string
   description?: string
   bucket: 'regular' | 'template' | 'example'
-  hasHandoff: boolean
-  handoffPath: string
 }
 
 function humanize(path: string): string {
@@ -81,8 +77,6 @@ const prototypes = computed<PrototypeEntry[]>(() => {
         title,
         description,
         bucket: prototypeBucket(title),
-        hasHandoff: hasHandoff(slug),
-        handoffPath: handoffRouteForSlug(slug),
       }
     })
     .sort((a, b) => {
@@ -129,13 +123,6 @@ const showBucketDivider = computed(
             <template #title>{{ entry.title }}</template>
             <template v-if="entry.description" #description>{{ entry.description }}</template>
           </CdxCard>
-          <a
-            v-if="entry.hasHandoff"
-            class="prototype-index__handoff-link"
-            :href="router.resolve({ path: entry.handoffPath }).href"
-          >
-            Engineering handoff
-          </a>
         </div>
 
         <hr v-if="showBucketDivider" class="prototype-index__divider" />
@@ -149,13 +136,6 @@ const showBucketDivider = computed(
             <template #title>{{ entry.title }}</template>
             <template v-if="entry.description" #description>{{ entry.description }}</template>
           </CdxCard>
-          <a
-            v-if="entry.hasHandoff"
-            class="prototype-index__handoff-link"
-            :href="router.resolve({ path: entry.handoffPath }).href"
-          >
-            Engineering handoff
-          </a>
         </div>
       </div>
     </div>
@@ -171,19 +151,6 @@ const showBucketDivider = computed(
 
 .prototype-index__card {
   min-width: 0;
-}
-
-.prototype-index__handoff-link {
-  display: inline-block;
-  margin-top: var(--spacing-25, 0.25rem);
-  margin-left: var(--spacing-50, 0.5rem);
-  font-size: var(--font-size-small, 0.875rem);
-  color: var(--color-progressive, #36c);
-  text-decoration: none;
-}
-
-.prototype-index__handoff-link:hover {
-  text-decoration: underline;
 }
 
 .prototype-index__divider {
