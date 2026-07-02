@@ -10,7 +10,7 @@ import {
   CdxTextInput,
 } from '@wikimedia/codex'
 
-import ChromeWrapper from '@/components/ChromeWrapper.vue'
+import ChromeWrapper from '@/components/chrome/ChromeWrapper.vue'
 import SpecialPageWrapper from '@/components/SpecialPageWrapper.vue'
 
 import CitationEditorPanel from './CitationEditorPanel.vue'

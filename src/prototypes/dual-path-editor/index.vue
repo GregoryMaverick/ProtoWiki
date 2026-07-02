@@ -19,7 +19,7 @@ import {
   CdxSelect,
   CdxTextInput,
 } from '@wikimedia/codex'
-import ChromeWrapper from '@/components/ChromeWrapper.vue'
+import ChromeWrapper from '@/components/chrome/ChromeWrapper.vue'
 import {
   articleSections,
   articleSubject,

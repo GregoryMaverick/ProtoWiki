@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 
-import ChromeWrapper from '@/components/ChromeWrapper.vue'
+import ChromeWrapper from '@/components/chrome/ChromeWrapper.vue'
 import SpecialPageWrapper from '@/components/SpecialPageWrapper.vue'
 
 import { promoteFragmentCard } from '../abstract-editor-paradigms/shared-fragment-catalog'

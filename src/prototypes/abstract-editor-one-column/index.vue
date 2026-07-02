@@ -11,8 +11,8 @@ import {
   cdxIconTrash,
 } from '@wikimedia/codex-icons'
 
-import ArticleCustom from '@/components/ArticleCustom.vue'
-import ChromeWrapper from '@/components/ChromeWrapper.vue'
+import ArticleCustom from '@/components/article/ArticleCustom.vue'
+import ChromeWrapper from '@/components/chrome/ChromeWrapper.vue'
 import SentenceActionMenu from './SentenceActionMenu.vue'
 import AbstractEditToolbar from './AbstractEditToolbar.vue'
 import {

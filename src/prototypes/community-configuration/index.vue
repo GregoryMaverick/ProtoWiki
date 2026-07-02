@@ -3,7 +3,7 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { CdxButton, CdxMessage } from '@wikimedia/codex'
 
-import ChromeWrapper from '@/components/ChromeWrapper.vue'
+import ChromeWrapper from '@/components/chrome/ChromeWrapper.vue'
 import SpecialPageWrapper from '@/components/SpecialPageWrapper.vue'
 
 import CommunityConfigDashboard from './CommunityConfigDashboard.vue'
