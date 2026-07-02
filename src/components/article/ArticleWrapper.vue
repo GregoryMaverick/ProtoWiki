@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, inject, useSlots } from 'vue'
 
 import ArticleHeader from './ArticleHeader.vue'
 import { globalSkin, globalTheme, PROTOWIKI_CHROME_SKIN, PROTOWIKI_CHROME_THEME } from '@/theme'
@@ -20,6 +20,8 @@ interface Props {
   theme?: Theme
   /** Passed to **`ArticleHeader`** interlanguage control (**`N` languages**). */
   languagesCount?: number
+  /** Passed to **`ArticleHeader`** desktop action tabs. */
+  activeAction?: 'read' | 'edit' | 'history'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -30,6 +32,7 @@ const props = withDefaults(defineProps<Props>(), {
   skin: undefined,
   theme: undefined,
   languagesCount: undefined,
+  activeAction: 'read',
 })
 
 const inheritedSkin = inject(PROTOWIKI_CHROME_SKIN)
@@ -40,13 +43,19 @@ const effectiveTheme = computed<Theme>(
   () => props.theme ?? inheritedTheme?.value ?? globalTheme.value,
 )
 
-const derivedHeader = computed(() => (props.title ?? '').replace(/_/g, ' ').trim())
+const slots = useSlots()
+
+const hasEditToolbar = computed(() => Boolean(slots['edit-toolbar']))
+
+const showTaglineInHeader = computed(
+  () => props.activeAction !== 'edit' || !hasEditToolbar.value,
+)
 
 /** Non-empty string for **`ArticleHeader`** (explicit **`header`** wins, else **`title`**, else fallback). */
 const chromeHeaderLabel = computed(() => {
   const explicit = props.header?.trim()
   if (explicit) return explicit
-  const derived = derivedHeader.value.trim()
+  const derived = (props.title ?? '').replace(/_/g, ' ').trim()
   if (derived) return derived
   return 'Article'
 })
@@ -64,7 +73,25 @@ const chromeHeaderLabel = computed(() => {
       :title="chromeHeaderLabel"
       :languages-count="props.languagesCount"
       :skin="props.skin"
-    />
+      :active-action="props.activeAction"
+      :show-tagline="showTaglineInHeader"
+    >
+      <template v-if="$slots['edit-actions']" #edit-actions>
+        <slot name="edit-actions" />
+      </template>
+    </ArticleHeader>
+    <div
+      v-if="props.activeAction === 'edit' && $slots['edit-toolbar']"
+      class="article__edit-toolbar"
+    >
+      <slot name="edit-toolbar" />
+    </div>
+    <p
+      v-if="!showTaglineInHeader && effectiveSkin === 'desktop'"
+      class="article__ve-tagline"
+    >
+      From Wikipedia, the free encyclopedia
+    </p>
     <slot />
   </article>
 </template>
@@ -87,5 +114,17 @@ const chromeHeaderLabel = computed(() => {
   padding-inline: 0;
   padding-block-end: var(--spacing-100, 16px);
   padding-block-start: var(--spacing-150, 24px);
+}
+
+.article__edit-toolbar {
+  margin-bottom: 0;
+}
+
+.article__ve-tagline {
+  margin: var(--spacing-50, 8px) 0 var(--spacing-100, 16px);
+  padding: 0;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-small, 14px);
+  color: var(--color-base);
 }
 </style>

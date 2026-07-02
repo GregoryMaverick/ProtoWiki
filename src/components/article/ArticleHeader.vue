@@ -38,11 +38,17 @@ interface Props {
    * Drives the structural mobile vs desktop layout (icon toolbar vs text actions).
    */
   skin?: Skin
+  /** Which desktop action tab appears active. */
+  activeAction?: 'read' | 'edit' | 'history'
+  /** Hide the “From Wikipedia…” tagline (e.g. when VisualEditor toolbar replaces its position). */
+  showTagline?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   languagesCount: 18,
   skin: undefined,
+  activeAction: 'read',
+  showTagline: true,
 })
 
 const inheritedSkin = inject(PROTOWIKI_CHROME_SKIN)
@@ -135,14 +141,29 @@ function onLanguagePick(row: ArticleLanguageLink) {
       >
         <a
           href="#"
-          class="article-header__action article-header__action--active"
-          aria-current="true"
+          class="article-header__action"
+          :class="{ 'article-header__action--active': props.activeAction === 'read' }"
+          :aria-current="props.activeAction === 'read' ? 'true' : undefined"
           @click.prevent="$emit('readClick')"
         >
           Read
         </a>
-        <a href="#" class="article-header__action" @click.prevent="$emit('editClick')"> Edit </a>
-        <a href="#" class="article-header__action" @click.prevent="$emit('historyClick')">
+        <a
+          href="#"
+          class="article-header__action"
+          :class="{ 'article-header__action--active': props.activeAction === 'edit' }"
+          :aria-current="props.activeAction === 'edit' ? 'true' : undefined"
+          @click.prevent="$emit('editClick')"
+        >
+          Edit
+        </a>
+        <a
+          href="#"
+          class="article-header__action"
+          :class="{ 'article-header__action--active': props.activeAction === 'history' }"
+          :aria-current="props.activeAction === 'history' ? 'true' : undefined"
+          @click.prevent="$emit('historyClick')"
+        >
           View history
         </a>
         <CdxButton
@@ -153,6 +174,9 @@ function onLanguagePick(row: ArticleLanguageLink) {
         >
           <CdxIcon :icon="cdxIconUnStar" />
         </CdxButton>
+        <div v-if="props.activeAction === 'edit'" class="article-header__edit-actions">
+          <slot name="edit-actions" />
+        </div>
       </nav>
     </div>
 
@@ -236,6 +260,13 @@ function onLanguagePick(row: ArticleLanguageLink) {
       </template>
     </div>
 
+    <div
+      v-if="effectiveSkin === 'mobile' && props.activeAction === 'edit'"
+      class="article-header__mobile-edit-actions"
+    >
+      <slot name="edit-actions" />
+    </div>
+
     <CdxPopover
       v-model:open="langMenuOpen"
       :anchor="langAnchor"
@@ -280,7 +311,7 @@ function onLanguagePick(row: ArticleLanguageLink) {
       </div>
     </CdxPopover>
 
-    <p v-if="effectiveSkin === 'desktop'" class="article-header__tagline">
+    <p v-if="effectiveSkin === 'desktop' && props.showTagline" class="article-header__tagline">
       {{ DEFAULT_TAGLINE }}
     </p>
   </header>
@@ -442,6 +473,19 @@ function onLanguagePick(row: ArticleLanguageLink) {
 .article-header__icon-btn {
   margin-inline-start: var(--spacing-25, 2px);
   color: var(--color-base);
+}
+
+.article-header__edit-actions {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: var(--spacing-50, 8px);
+}
+
+.article-header__mobile-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--spacing-50, 8px) 0;
+  border-bottom: 1px solid var(--border-color-subtle);
 }
 
 .article-header__tagline {
