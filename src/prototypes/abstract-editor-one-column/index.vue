@@ -24,6 +24,7 @@ import {
   isCardAvailableInAddSearch,
   sectionHeadingFunction,
   type HybridCardDefinition,
+  type TemplateFieldDefinition,
 } from '../abstract-editor-paradigms/mock-registry'
 
 definePage({
@@ -349,7 +350,7 @@ function openChipDialog(cardId: string, sectionId: string) {
   activeSectionId.value = sectionId
   editingFragmentId.value = null
   activeInsertIndex.value = sectionFragmentsList(sectionId).length
-  editingValues.value = { ...defaultValuesFromWikidata(card) }
+  editingValues.value = emptyValuesForCard(card)
   showDialog.value = true
 }
 
@@ -369,7 +370,38 @@ function closeDialog() {
   editingNewSection.value = false
 }
 
-function applyWikidataSuggestion(fieldKey: string, value: string) {
+function pageTitleFieldValue(field: TemplateFieldDefinition): string {
+  return field.wikidataSuggestion ?? field.placeholder
+}
+
+function emptyValuesForCard(card: HybridCardDefinition): Record<string, string> {
+  return Object.fromEntries(
+    card.fields.map((field) => [
+      field.key,
+      // Page-title fields open filled with the article subject; Wikidata fields stay empty.
+      field.suggestionSource === 'pageTitle' ? pageTitleFieldValue(field) : '',
+    ]),
+  )
+}
+
+function showFieldSuggestion(field: TemplateFieldDefinition): boolean {
+  // Page-title values are prefilled; only true Wikidata suggestions show Use.
+  return Boolean(field.wikidataSuggestion) && field.suggestionSource !== 'pageTitle'
+}
+
+function fieldInputPlaceholder(field: TemplateFieldDefinition): string {
+  // Prefill page-title; Wikidata values live in the Use row, not as ghost text.
+  if (field.suggestionSource === 'pageTitle' || showFieldSuggestion(field)) {
+    return ''
+  }
+  return field.placeholder
+}
+
+function fieldSuggestionLabel(field: TemplateFieldDefinition): string {
+  return field.suggestionSource === 'pageTitle' ? 'Page title' : 'Wikidata'
+}
+
+function applyFieldSuggestion(fieldKey: string, value: string) {
   editingValues.value[fieldKey] = value
 }
 
@@ -637,10 +669,7 @@ function selectAddSearchResult(result: SearchResult) {
     result.card.fields.map((field) => [
       field.key,
       result.prefill?.[field.key] ??
-        sectionFragmentsList(activeSectionId.value).find((entry) => entry.cardId === result.card.id)
-          ?.values[field.key] ??
-        defaultValuesFromWikidata(result.card)[field.key] ??
-        '',
+        (field.suggestionSource === 'pageTitle' ? pageTitleFieldValue(field) : ''),
     ]),
   )
 }
@@ -670,7 +699,7 @@ const primaryDialogAction = computed(() =>
             ? editingNewSection.value
               ? 'Add section'
               : 'Save section'
-            : 'Save sentence',
+            : 'Add sentence',
         actionType: 'progressive' as const,
         disabled: !canSaveDialog.value,
       },
@@ -900,20 +929,8 @@ function confirmPublish() {
             @click="selectAddSearchResult(result)"
           >
             <strong>{{ result.card.informationLabel }}</strong>
-            <span>{{ result.card.pattern }}</span>
-            <small class="search-result__group">
-              Includes:
-              {{ functionGroupLayers(result.card).join(' → ') }}
-            </small>
-            <small>
-              {{
-                result.matchType === 'both'
-                  ? 'Matches your search and sentence'
-                  : result.matchType === 'sentence'
-                    ? 'Matches your sentence'
-                    : 'Matches your search'
-              }}
-            </small>
+            <span>{{ result.card.helper }}</span>
+            <small>Example: {{ result.card.sentence(defaultValuesFromWikidata(result.card)) }}</small>
           </button>
         </div>
 
@@ -929,16 +946,6 @@ function confirmPublish() {
         </p>
         <p class="pattern-chip">{{ sectionHeadingFunction.pattern }}</p>
         <p class="function-group-helper">{{ sectionHeadingFunction.helper }}</p>
-
-        <details class="function-group-structure">
-          <summary>Nested functions in this group</summary>
-          <ol class="function-group-structure__layers">
-            <li v-for="layer in sectionHeadingLayers" :key="layer">
-              {{ layer }}
-            </li>
-          </ol>
-          <pre class="function-group-structure__tree">{{ JSON.stringify(sectionHeadingFunction.functionTree, null, 2) }}</pre>
-        </details>
 
         <div class="field-list">
           <div
@@ -962,15 +969,6 @@ function confirmPublish() {
       </template>
 
       <template v-else-if="activeChipCard">
-        <details class="function-group-structure">
-          <summary>Nested functions in this group</summary>
-          <ol class="function-group-structure__layers">
-            <li v-for="layer in functionGroupLayers(activeChipCard)" :key="layer">
-              {{ layer }}
-            </li>
-          </ol>
-          <pre class="function-group-structure__tree">{{ JSON.stringify(activeChipCard.functionTree, null, 2) }}</pre>
-        </details>
 
         <div class="field-list">
           <div
@@ -982,14 +980,15 @@ function confirmPublish() {
               <template #label>{{ field.label }}</template>
               <CdxTextInput
                 v-model="editingValues[field.key]"
-                :placeholder="field.placeholder"
+                :placeholder="fieldInputPlaceholder(field)"
               />
             </CdxField>
-            <p v-if="field.wikidataSuggestion" class="field-suggestion">
-              Wikidata: <strong>{{ field.wikidataSuggestion }}</strong>
+            <p v-if="showFieldSuggestion(field)" class="field-suggestion">
+              {{ fieldSuggestionLabel(field) }}:
+              <strong>{{ field.wikidataSuggestion }}</strong>
               <CdxButton
                 weight="quiet"
-                @click="applyWikidataSuggestion(field.key, field.wikidataSuggestion)"
+                @click="applyFieldSuggestion(field.key, field.wikidataSuggestion || '')"
               >
                 Use
               </CdxButton>
@@ -1281,9 +1280,5 @@ function confirmPublish() {
   padding: var(--spacing-75);
   border-left: 4px solid var(--border-color-progressive);
   background-color: var(--background-color-progressive-subtle);
-}
-
-.search-result__group {
-  color: var(--color-subtle);
 }
 </style>

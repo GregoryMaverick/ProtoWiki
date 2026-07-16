@@ -6,11 +6,24 @@ export interface WebCitation {
   displayLanguage: string
 }
 
+export type FieldSuggestionSource = 'wikidata' | 'pageTitle'
+
 export interface TemplateFieldDefinition {
   key: string
   label: string
   placeholder: string
+  /**
+   * Suggested value for the field.
+   * - `wikidata` (default): shown with a Use action; input starts empty.
+   * - `pageTitle`: auto-filled into the input; no suggestion row.
+   */
   wikidataSuggestion?: string
+  /**
+   * Where the suggestion comes from. Defaults to `wikidata` when omitted.
+   * Use `pageTitle` when the value is the article subject / page title
+   * (prefilled in the input, not offered as a Use suggestion).
+   */
+  suggestionSource?: FieldSuggestionSource
 }
 
 export interface SectionDefinition {
@@ -273,6 +286,7 @@ export const hybridCardCatalog: HybridCardDefinition[] = [
         label: 'Person',
         placeholder: articleSubject,
         wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
       },
       {
         key: 'date',
@@ -316,14 +330,20 @@ export const hybridCardCatalog: HybridCardDefinition[] = [
     informationLabel: 'Occupation',
     sectionId: 'lead',
     pattern: '[Person] is a [class]',
-    helper: 'Say what the topic is.',
+    helper: 'Occupation of a person.',
     functionName: 'Article-less instantiating fragment',
     functionZid: 'Z10031',
     wikidataProperty: 'P106 occupation',
     wikidataSuggestion: 'software engineer',
     fields: [
-      { key: 'entity', label: 'Person', placeholder: articleSubject, wikidataSuggestion: articleSubject },
-      { key: 'class', label: 'Class or occupation', placeholder: 'software engineer', wikidataSuggestion: 'software engineer' },
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      { key: 'class', label: 'Class or occupation', placeholder: '', wikidataSuggestion: 'software engineer' },
     ],
     sentence: (values) => `${values.entity} is a ${values.class}.`,
     functionTree: composeFragmentTree({
@@ -343,7 +363,13 @@ export const hybridCardCatalog: HybridCardDefinition[] = [
     wikidataProperty: 'P569 date of birth',
     wikidataSuggestion: 'August 11, 1950',
     fields: [
-      { key: 'entity', label: 'Person', placeholder: articleSubject, wikidataSuggestion: articleSubject },
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
       { key: 'date', label: 'Date', placeholder: 'August 11, 1950', wikidataSuggestion: 'August 11, 1950' },
     ],
     sentence: (values) => `${values.entity} was born on ${values.date}.`,
@@ -371,7 +397,13 @@ export const hybridCardCatalog: HybridCardDefinition[] = [
     wikidataProperty: 'P19 place of birth',
     wikidataSuggestion: 'San Jose, California',
     fields: [
-      { key: 'entity', label: 'Person', placeholder: articleSubject, wikidataSuggestion: articleSubject },
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
       { key: 'place', label: 'Place', placeholder: 'San Jose, California', wikidataSuggestion: 'San Jose, California' },
     ],
     sentence: (values) => `${values.entity} was born in ${values.place}.`,
@@ -395,7 +427,13 @@ export const hybridCardCatalog: HybridCardDefinition[] = [
     wikidataProperty: 'P69 educated at',
     wikidataSuggestion: 'University of California, Berkeley',
     fields: [
-      { key: 'entity', label: 'Person', placeholder: articleSubject, wikidataSuggestion: articleSubject },
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
       {
         key: 'institution',
         label: 'Institution',
@@ -424,7 +462,13 @@ export const hybridCardCatalog: HybridCardDefinition[] = [
     wikidataProperty: 'P800 notable work',
     wikidataSuggestion: 'Apple',
     fields: [
-      { key: 'entity', label: 'Person', placeholder: articleSubject, wikidataSuggestion: articleSubject },
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
       { key: 'role', label: 'Role', placeholder: 'co-founder', wikidataSuggestion: 'co-founder' },
       { key: 'work', label: 'Organization', placeholder: 'Apple', wikidataSuggestion: 'Apple' },
     ],
@@ -450,7 +494,13 @@ export const hybridCardCatalog: HybridCardDefinition[] = [
     wikidataProperty: 'P166 award received',
     wikidataSuggestion: 'National Medal of Technology',
     fields: [
-      { key: 'entity', label: 'Person', placeholder: articleSubject, wikidataSuggestion: articleSubject },
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
       {
         key: 'award',
         label: 'Award',
@@ -735,13 +785,19 @@ export const sentenceTemplateCatalog: TemplateDefinition[] = [
     id: 'intro',
     label: 'Occupation / class',
     pattern: '[Person] is a [class]',
-    helper: 'Say what the topic is.',
+    helper: 'Occupation of a person.',
     sectionId: 'lead',
     functionName: 'Article-less instantiating fragment',
     searchKeywords: ['occupation', 'engineer', 'is a', 'introduction', 'class', 'profession'],
     fields: [
-      { key: 'entity', label: 'Person', placeholder: articleSubject, wikidataSuggestion: articleSubject },
-      { key: 'class', label: 'Class or occupation', placeholder: 'software engineer', wikidataSuggestion: 'software engineer' },
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      { key: 'class', label: 'Class or occupation', placeholder: '', wikidataSuggestion: 'software engineer' },
     ],
     sentence: (values) => `${values.entity} is a ${values.class}.`,
   },
@@ -754,7 +810,13 @@ export const sentenceTemplateCatalog: TemplateDefinition[] = [
     functionName: 'Date-of-birth statement',
     searchKeywords: ['born', 'birth', 'date', 'birthday'],
     fields: [
-      { key: 'entity', label: 'Person', placeholder: articleSubject, wikidataSuggestion: articleSubject },
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
       { key: 'date', label: 'Date', placeholder: 'August 11, 1950', wikidataSuggestion: 'August 11, 1950' },
     ],
     sentence: (values) => `${values.entity} was born on ${values.date}.`,
@@ -768,7 +830,13 @@ export const sentenceTemplateCatalog: TemplateDefinition[] = [
     functionName: 'Place-of-birth statement',
     searchKeywords: ['born in', 'birthplace', 'place', 'city'],
     fields: [
-      { key: 'entity', label: 'Person', placeholder: articleSubject, wikidataSuggestion: articleSubject },
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
       { key: 'place', label: 'Place', placeholder: 'San Jose, California', wikidataSuggestion: 'San Jose, California' },
     ],
     sentence: (values) => `${values.entity} was born in ${values.place}.`,
@@ -782,7 +850,13 @@ export const sentenceTemplateCatalog: TemplateDefinition[] = [
     functionName: 'Education statement',
     searchKeywords: ['studied', 'education', 'university', 'school', 'college'],
     fields: [
-      { key: 'entity', label: 'Person', placeholder: articleSubject, wikidataSuggestion: articleSubject },
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
       {
         key: 'institution',
         label: 'Institution',
@@ -801,7 +875,13 @@ export const sentenceTemplateCatalog: TemplateDefinition[] = [
     functionName: 'Defining role sentence',
     searchKeywords: ['co-founder', 'founder', 'apple', 'organization', 'company', 'created'],
     fields: [
-      { key: 'entity', label: 'Person', placeholder: articleSubject, wikidataSuggestion: articleSubject },
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
       { key: 'role', label: 'Role', placeholder: 'co-founder', wikidataSuggestion: 'co-founder' },
       { key: 'work', label: 'Organization', placeholder: 'Apple', wikidataSuggestion: 'Apple' },
     ],
@@ -816,7 +896,13 @@ export const sentenceTemplateCatalog: TemplateDefinition[] = [
     functionName: 'Award statement',
     searchKeywords: ['award', 'medal', 'prize', 'honor', 'received'],
     fields: [
-      { key: 'entity', label: 'Person', placeholder: articleSubject, wikidataSuggestion: articleSubject },
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
       {
         key: 'award',
         label: 'Award',
