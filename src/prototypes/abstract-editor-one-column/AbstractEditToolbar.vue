@@ -24,7 +24,7 @@ const emit = defineEmits<{
   publish: []
 }>()
 
-const suggestionsEnabled = defineModel<boolean>('suggestionsEnabled', { default: true })
+const suggestionsEnabled = defineModel<boolean>('suggestionsEnabled', { default: false })
 
 const paragraphSelection = ref<string | null>(null)
 const editorMode = ref<'visual' | 'abstract'>('visual')
@@ -66,7 +66,8 @@ function onEditorModeChange(value: string | number | (string | number)[] | null)
 
 <template>
   <div class="ve-toolbar" role="toolbar" aria-label="Editing toolbar">
-    <div class="ve-toolbar__section ve-toolbar__section--tools">
+    <!-- Hidden for now; remove .ve-toolbar__hidden to restore -->
+    <div class="ve-toolbar__section ve-toolbar__section--tools ve-toolbar__hidden">
       <CdxMenuButton
         v-model:selected="paragraphSelection"
         class="ve-toolbar__paragraph"
@@ -96,9 +97,10 @@ function onEditorModeChange(value: string | number | (string | number)[] | null)
         <CdxIcon :icon="cdxIconLightbulb" />
       </CdxToggleButton>
 
+      <!-- Hidden for now; remove .ve-toolbar__hidden to restore -->
       <CdxToggleButtonGroup
         v-model="editorMode"
-        class="ve-toolbar__editor-group"
+        class="ve-toolbar__editor-group ve-toolbar__hidden"
         :buttons="editorButtons"
         aria-label="Switch editor"
         @update:model-value="onEditorModeChange"
@@ -140,6 +142,11 @@ function onEditorModeChange(value: string | number | (string | number)[] | null)
   margin-inline-start: auto;
   border-inline-end: none;
   padding-inline-end: var(--spacing-75);
+}
+
+.ve-toolbar__hidden,
+.ve-toolbar__editor-group.ve-toolbar__hidden {
+  display: none !important;
 }
 
 .ve-toolbar__paragraph :deep(.cdx-button),

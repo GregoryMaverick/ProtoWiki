@@ -97,7 +97,7 @@ const editingValues = ref<Record<string, string>>({})
 const addSearchQuery = ref('')
 const showPublishDialog = ref(false)
 const publishNotice = ref('')
-const suggestionsEnabled = ref(true)
+const suggestionsEnabled = ref(false)
 const editingNewSection = ref(false)
 
 const abstractEditorUrl = abstractArticleEditUrl()
@@ -871,7 +871,7 @@ function confirmPublish() {
       v-model:open="showDialog"
       :title="
         dialogMode === 'add-search'
-          ? `Add function group · ${sectionTitle(activeSectionId)}`
+          ? 'Add information'
           : dialogMode === 'section-heading'
             ? editingNewSection
               ? 'New section'
@@ -885,13 +885,9 @@ function confirmPublish() {
     >
       <template v-if="dialogMode === 'add-search'">
         <CdxField>
-          <template #label>Search function groups</template>
-          <template #description>
-            Match by information (e.g. occupation) or sentence shape (e.g. Steve Wozniak is a software engineer).
-          </template>
+          <template #label>What information would you like to add?</template>
           <CdxTextInput
             v-model="addSearchQuery"
-            placeholder="Type a fact name or a sentence..."
           />
         </CdxField>
 
@@ -906,23 +902,23 @@ function confirmPublish() {
             <strong>{{ result.card.informationLabel }}</strong>
             <span>{{ result.card.pattern }}</span>
             <small class="search-result__group">
-              Function group:
+              Includes:
               {{ functionGroupLayers(result.card).join(' → ') }}
             </small>
             <small>
               {{
                 result.matchType === 'both'
-                  ? 'Information + sentence match'
+                  ? 'Matches your search and sentence'
                   : result.matchType === 'sentence'
-                    ? 'Sentence match'
-                    : 'Information match'
+                    ? 'Matches your sentence'
+                    : 'Matches your search'
               }}
             </small>
           </button>
         </div>
 
         <p v-if="addSearchNoResults" class="search-empty">
-          No matching information type or sentence pattern found.
+          No matching information found. Try another word or a short sentence.
         </p>
       </template>
 
@@ -1004,10 +1000,6 @@ function confirmPublish() {
         <p v-if="editingPreview" class="sentence-preview">
           Preview: {{ editingPreview }}
         </p>
-      </template>
-
-      <template #footer-text>
-        <CdxButton weight="quiet" @click="closeDialog">Cancel</CdxButton>
       </template>
     </CdxDialog>
 
