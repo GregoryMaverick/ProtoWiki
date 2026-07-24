@@ -19,7 +19,7 @@ import {
   abstractArticleEditUrl,
   articleSections,
   composeFunctionLayers,
-  defaultValuesFromWikidata,
+  exampleValuesForCard,
   hybridCardCatalog,
   isCardAvailableInAddSearch,
   sectionHeadingFunction,
@@ -71,9 +71,32 @@ interface SearchResult {
 }
 
 const articleBlueprint = reactive<SectionPlan[]>([
-  { sectionId: 'lead', chipOrder: ['birthDate', 'occupation'] },
-  { sectionId: 'early-life', chipOrder: ['placeOfBirth', 'education'] },
-  { sectionId: 'career', chipOrder: ['notableWork', 'award'] },
+  {
+    sectionId: 'lead',
+    chipOrder: [
+      'birthDate',
+      'occupation',
+      'whereFrom',
+      'citizenship',
+      'nickname',
+      'languagesSpoken',
+    ],
+  },
+  {
+    sectionId: 'early-life',
+    chipOrder: ['placeOfBirth', 'education', 'spouse'],
+  },
+  {
+    sectionId: 'career',
+    chipOrder: [
+      'notableWork',
+      'award',
+      'workplace',
+      'fieldOfWork',
+      'memberOf',
+      'notableWorksList',
+    ],
+  },
 ])
 
 const sectionHeadingValues = reactive<Record<string, Record<string, string>>>(
@@ -374,24 +397,28 @@ function pageTitleFieldValue(field: TemplateFieldDefinition): string {
   return field.wikidataSuggestion ?? field.placeholder
 }
 
+function isPrefillField(field: TemplateFieldDefinition): boolean {
+  return field.suggestionSource === 'pageTitle' || field.suggestionSource === 'default'
+}
+
 function emptyValuesForCard(card: HybridCardDefinition): Record<string, string> {
   return Object.fromEntries(
     card.fields.map((field) => [
       field.key,
-      // Page-title fields open filled with the article subject; Wikidata fields stay empty.
-      field.suggestionSource === 'pageTitle' ? pageTitleFieldValue(field) : '',
+      // Prefill page-title and default fields; Wikidata fields stay empty.
+      isPrefillField(field) ? pageTitleFieldValue(field) : '',
     ]),
   )
 }
 
 function showFieldSuggestion(field: TemplateFieldDefinition): boolean {
-  // Page-title values are prefilled; only true Wikidata suggestions show Use.
-  return Boolean(field.wikidataSuggestion) && field.suggestionSource !== 'pageTitle'
+  // Prefill fields open filled; only true Wikidata suggestions show Use.
+  return Boolean(field.wikidataSuggestion) && !isPrefillField(field)
 }
 
 function fieldInputPlaceholder(field: TemplateFieldDefinition): string {
-  // Prefill page-title; Wikidata values live in the Use row, not as ghost text.
-  if (field.suggestionSource === 'pageTitle' || showFieldSuggestion(field)) {
+  // Prefill fields and Wikidata Use rows don't need ghost text.
+  if (isPrefillField(field) || showFieldSuggestion(field)) {
     return ''
   }
   return field.placeholder
@@ -669,7 +696,7 @@ function selectAddSearchResult(result: SearchResult) {
     result.card.fields.map((field) => [
       field.key,
       result.prefill?.[field.key] ??
-        (field.suggestionSource === 'pageTitle' ? pageTitleFieldValue(field) : ''),
+        (isPrefillField(field) ? pageTitleFieldValue(field) : ''),
     ]),
   )
 }
@@ -930,7 +957,7 @@ function confirmPublish() {
           >
             <strong>{{ result.card.informationLabel }}</strong>
             <span>{{ result.card.helper }}</span>
-            <small>Example: {{ result.card.sentence(defaultValuesFromWikidata(result.card)) }}</small>
+            <small>Example: {{ result.card.sentence(exampleValuesForCard(result.card)) }}</small>
           </button>
         </div>
 

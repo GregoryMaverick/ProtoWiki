@@ -6,7 +6,7 @@ export interface WebCitation {
   displayLanguage: string
 }
 
-export type FieldSuggestionSource = 'wikidata' | 'pageTitle'
+export type FieldSuggestionSource = 'wikidata' | 'pageTitle' | 'default'
 
 export interface TemplateFieldDefinition {
   key: string
@@ -22,6 +22,8 @@ export interface TemplateFieldDefinition {
    * Where the suggestion comes from. Defaults to `wikidata` when omitted.
    * Use `pageTitle` when the value is the article subject / page title
    * (prefilled in the input, not offered as a Use suggestion).
+   * Use `default` when the input should open with a fixed default (e.g. English)
+   * without a Wikidata Use suggestion.
    */
   suggestionSource?: FieldSuggestionSource
 }
@@ -305,6 +307,7 @@ export const hybridCardCatalog: HybridCardDefinition[] = [
         label: 'Language',
         placeholder: 'English',
         wikidataSuggestion: 'English',
+        suggestionSource: 'default',
       },
     ],
     sentence: (values) => {
@@ -519,6 +522,628 @@ export const hybridCardCatalog: HybridCardDefinition[] = [
     }),
   },
   {
+    id: 'whereFrom',
+    informationLabel: "Where they're from",
+    sectionId: 'lead',
+    pattern: '[Person] is a [role] from [Place]',
+    helper: 'Say what someone is and where they are from.',
+    functionName: 'state origin using entity and class',
+    functionZid: 'Z33975',
+    searchKeywords: ['from', 'origin', 'hometown', 'where from', 'background', 'came from'],
+    wikidataProperty: 'P106 occupation · P19 place of birth',
+    wikidataSuggestion: 'engineer · San Jose',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      { key: 'role', label: 'Role or occupation', placeholder: 'engineer', wikidataSuggestion: 'engineer' },
+      { key: 'place', label: 'Place', placeholder: 'San Jose', wikidataSuggestion: 'San Jose' },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} is a ${values.role || 'engineer'} from ${values.place || 'San Jose'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: 'state origin using entity and class (Z33975)',
+      arguments: {
+        entity: 'Entity(Steve Wozniak)',
+        class: 'Class(engineer)',
+        place: 'Place(San Jose)',
+      },
+    }),
+  },
+  {
+    id: 'citizenship',
+    informationLabel: 'Citizenship',
+    sectionId: 'lead',
+    pattern: '[Person] is a citizen of [Country]',
+    helper: 'Country or countries of citizenship. Built with a defining-role sentence.',
+    functionName: 'defining role sentence (monolingual)',
+    functionZid: 'Z28016',
+    searchKeywords: ['citizen', 'citizenship', 'nationality', 'country', 'passport'],
+    wikidataProperty: 'P27 country of citizenship',
+    wikidataSuggestion: 'the United States',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      {
+        key: 'country',
+        label: 'Country',
+        placeholder: 'the United States',
+        wikidataSuggestion: 'the United States',
+      },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} is a citizen of ${values.country || 'the United States'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: 'defining role sentence (monolingual) (Z28016)',
+      arguments: {
+        subject: 'Entity(Steve Wozniak)',
+        role: 'Role(citizen)',
+        dependency: 'Country(United States)',
+        language: 'English (Z1002)',
+      },
+    }),
+  },
+  {
+    id: 'workplace',
+    informationLabel: 'Workplace',
+    sectionId: 'career',
+    pattern: '[Person] worked at [Organization]',
+    helper: 'An employer or workplace. Built with a subject–verb–object sentence.',
+    functionName: '[X] [present verb] [Y], Multilingual',
+    functionZid: 'Z32702',
+    searchKeywords: ['worked at', 'employer', 'workplace', 'job', 'company', 'employed'],
+    wikidataProperty: 'P108 employer',
+    wikidataSuggestion: 'Apple',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      {
+        key: 'organization',
+        label: 'Organization',
+        placeholder: 'Apple',
+        wikidataSuggestion: 'Apple',
+      },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} worked at ${values.organization || 'Apple'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: '[X] [present verb] [Y], Multilingual (Z32702)',
+      arguments: {
+        subject: 'Entity(Steve Wozniak)',
+        verb: 'Verb(work)',
+        object: 'Organization(Apple)',
+        language: 'English (Z1002)',
+      },
+    }),
+  },
+  {
+    id: 'publicOffice',
+    informationLabel: 'Public office',
+    sectionId: 'career',
+    pattern: '[Person] served as [Position]',
+    helper: 'An elected or appointed office or formal position. Built with a defining-role sentence.',
+    functionName: 'defining role sentence (monolingual)',
+    functionZid: 'Z28016',
+    searchKeywords: [
+      'served as',
+      'position',
+      'office',
+      'president',
+      'governor',
+      'mayor',
+      'minister',
+      'public office',
+    ],
+    wikidataProperty: 'P39 position held',
+    wikidataSuggestion: 'President of the United States',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      {
+        key: 'position',
+        label: 'Position',
+        placeholder: 'President of the United States',
+        wikidataSuggestion: 'President of the United States',
+      },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} served as ${values.position || 'President of the United States'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: 'defining role sentence (monolingual) (Z28016)',
+      arguments: {
+        subject: 'Entity(Steve Wozniak)',
+        role: 'Role(President of the United States)',
+        dependency: 'Entity(United States)',
+        language: 'English (Z1002)',
+      },
+    }),
+  },
+  {
+    id: 'dateOfDeath',
+    informationLabel: 'Date of death',
+    sectionId: 'lead',
+    pattern: '[Person] died on [Date]',
+    helper:
+      'When someone died. Uses the death sentence function ([name] died on [date] in [place]).',
+    functionName: '[name] died on [date] in [place], English',
+    functionZid: 'Z35978',
+    searchKeywords: ['died', 'death', 'died on', 'date of death', 'passed away'],
+    wikidataProperty: 'P570 date of death',
+    wikidataSuggestion: '15 March 44 BCE',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      {
+        key: 'date',
+        label: 'Date',
+        placeholder: '15 March 44 BCE',
+        wikidataSuggestion: '15 March 44 BCE',
+      },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} died on ${values.date || '15 March 44 BCE'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: '[name] died on [date] in [place], English (Z35978)',
+      arguments: {
+        name: 'Entity(Steve Wozniak)',
+        date: 'Date(15 March 44 BCE)',
+        place: 'Place(optional)',
+      },
+    }),
+  },
+  {
+    id: 'placeOfDeath',
+    informationLabel: 'Place of death',
+    sectionId: 'lead',
+    pattern: '[Person] died in [Place]',
+    helper:
+      'Where someone died. Uses the death sentence function ([name] died on [date] in [place]).',
+    functionName: '[name] died on [date] in [place], English',
+    functionZid: 'Z35978',
+    searchKeywords: ['died in', 'place of death', 'death place', 'where died'],
+    wikidataProperty: 'P20 place of death',
+    wikidataSuggestion: 'Rome',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      { key: 'place', label: 'Place', placeholder: 'Rome', wikidataSuggestion: 'Rome' },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} died in ${values.place || 'Rome'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: '[name] died on [date] in [place], English (Z35978)',
+      arguments: {
+        name: 'Entity(Steve Wozniak)',
+        date: 'Date(optional)',
+        place: 'Place(Rome)',
+      },
+    }),
+  },
+  {
+    id: 'notableWorksList',
+    informationLabel: 'List of notable works',
+    sectionId: 'career',
+    pattern: '• [Work]',
+    helper: 'A bullet list of notable works or creations.',
+    functionName: 'unordered list with item tagging',
+    functionZid: 'Z32179',
+    searchKeywords: ['list', 'works', 'notable works', 'bibliography', 'creations', 'bullets'],
+    wikidataProperty: 'P800 notable work',
+    wikidataSuggestion: 'Apple I; Apple II; Breakout',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      {
+        key: 'works',
+        label: 'Works (separate with semicolons)',
+        placeholder: 'Apple I; Apple II; Breakout',
+        wikidataSuggestion: 'Apple I; Apple II; Breakout',
+      },
+    ],
+    sentence: (values) => {
+      const works = (values.works || 'Apple I; Apple II; Breakout')
+        .split(';')
+        .map((work) => work.trim())
+        .filter(Boolean)
+      return works.map((work) => `• ${work}`).join(' ')
+    },
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: 'unordered list with item tagging (Z32179)',
+      arguments: {
+        items: 'Apple I; Apple II; Breakout',
+      },
+    }),
+  },
+  {
+    id: 'spouse',
+    informationLabel: 'Spouse / partner',
+    sectionId: 'early-life',
+    pattern: '[Person] is married to [Person]',
+    helper: 'A spouse or partner. Built with a marriage sentence function.',
+    functionName: 'he is married, English',
+    functionZid: 'Z33538',
+    searchKeywords: ['spouse', 'married', 'partner', 'wife', 'husband', 'marriage'],
+    wikidataProperty: 'P26 spouse',
+    wikidataSuggestion: 'Janet Hill',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      {
+        key: 'partner',
+        label: 'Spouse or partner',
+        placeholder: 'Janet Hill',
+        wikidataSuggestion: 'Janet Hill',
+      },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} is married to ${values.partner || 'Janet Hill'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: 'he is married, English (Z33538)',
+      arguments: {
+        subject: 'Entity(Steve Wozniak)',
+        partner: 'Entity(Janet Hill)',
+      },
+    }),
+  },
+  {
+    id: 'child',
+    informationLabel: 'Child',
+    sectionId: 'early-life',
+    pattern: '[Person] is the parent of [Person]',
+    helper: 'A child of the person. Built with a defining-role sentence.',
+    functionName: 'defining role sentence (monolingual)',
+    functionZid: 'Z28016',
+    searchKeywords: ['child', 'children', 'son', 'daughter', 'parent of', 'father of', 'mother of'],
+    wikidataProperty: 'P40 child',
+    wikidataSuggestion: 'Chelsea Clinton',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      {
+        key: 'child',
+        label: 'Child',
+        placeholder: 'Chelsea Clinton',
+        wikidataSuggestion: 'Chelsea Clinton',
+      },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} is the parent of ${values.child || 'Chelsea Clinton'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: 'defining role sentence (monolingual) (Z28016)',
+      arguments: {
+        subject: 'Entity(Steve Wozniak)',
+        role: 'Role(parent)',
+        dependency: 'Entity(Chelsea Clinton)',
+        language: 'English (Z1002)',
+      },
+    }),
+  },
+  {
+    id: 'parent',
+    informationLabel: 'Parent',
+    sectionId: 'early-life',
+    pattern: '[Person] is the child of [Person]',
+    helper: 'A parent of the person. Built with a defining-role sentence.',
+    functionName: 'defining role sentence (monolingual)',
+    functionZid: 'Z28016',
+    searchKeywords: ['parent', 'father', 'mother', 'child of', 'born to'],
+    wikidataProperty: 'P22 father · P25 mother',
+    wikidataSuggestion: 'Virginia Clinton Kelley',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      {
+        key: 'parent',
+        label: 'Parent',
+        placeholder: 'Virginia Clinton Kelley',
+        wikidataSuggestion: 'Virginia Clinton Kelley',
+      },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} is the child of ${values.parent || 'Virginia Clinton Kelley'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: 'defining role sentence (monolingual) (Z28016)',
+      arguments: {
+        subject: 'Entity(Steve Wozniak)',
+        role: 'Role(child)',
+        dependency: 'Entity(Virginia Clinton Kelley)',
+        language: 'English (Z1002)',
+      },
+    }),
+  },
+  {
+    id: 'residence',
+    informationLabel: 'Residence',
+    sectionId: 'early-life',
+    pattern: '[Person] lives in [Place]',
+    helper: 'Where the person lives or has lived. Built with a subject–verb–object sentence.',
+    functionName: '[X] [present verb] [Y], Multilingual',
+    functionZid: 'Z32702',
+    searchKeywords: ['lives in', 'residence', 'home', 'lives', 'lived in'],
+    wikidataProperty: 'P551 residence',
+    wikidataSuggestion: 'Chappaqua',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      {
+        key: 'place',
+        label: 'Place',
+        placeholder: 'Chappaqua',
+        wikidataSuggestion: 'Chappaqua',
+      },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} lives in ${values.place || 'Chappaqua'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: '[X] [present verb] [Y], Multilingual (Z32702)',
+      arguments: {
+        subject: 'Entity(Steve Wozniak)',
+        verb: 'Verb(live)',
+        object: 'Place(Chappaqua)',
+        language: 'English (Z1002)',
+      },
+    }),
+  },
+  {
+    id: 'fieldOfWork',
+    informationLabel: 'Field of work',
+    sectionId: 'career',
+    pattern: '[Person] works in [Field]',
+    helper: 'The person’s field or area of work. Built with a subject–verb–object sentence.',
+    functionName: '[X] [present verb] [Y], Multilingual',
+    functionZid: 'Z32702',
+    searchKeywords: ['field of work', 'works in', 'field', 'discipline', 'area'],
+    wikidataProperty: 'P101 field of work',
+    wikidataSuggestion: 'electrical engineering',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      {
+        key: 'field',
+        label: 'Field',
+        placeholder: 'electrical engineering',
+        wikidataSuggestion: 'electrical engineering',
+      },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} works in ${values.field || 'electrical engineering'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: '[X] [present verb] [Y], Multilingual (Z32702)',
+      arguments: {
+        subject: 'Entity(Steve Wozniak)',
+        verb: 'Verb(work)',
+        object: 'Field(electrical engineering)',
+        language: 'English (Z1002)',
+      },
+    }),
+  },
+  {
+    id: 'memberOf',
+    informationLabel: 'Member of',
+    sectionId: 'career',
+    pattern: '[Person] is a member of [Organization]',
+    helper: 'Membership in an organization. Built with a defining-role sentence.',
+    functionName: 'defining role sentence (monolingual)',
+    functionZid: 'Z28016',
+    searchKeywords: ['member of', 'membership', 'member', 'belongs to', 'academy'],
+    wikidataProperty: 'P463 member of',
+    wikidataSuggestion: 'the National Academy of Engineering',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      {
+        key: 'organization',
+        label: 'Organization',
+        placeholder: 'the National Academy of Engineering',
+        wikidataSuggestion: 'the National Academy of Engineering',
+      },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} is a member of ${values.organization || 'the National Academy of Engineering'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: 'defining role sentence (monolingual) (Z28016)',
+      arguments: {
+        subject: 'Entity(Steve Wozniak)',
+        role: 'Role(member)',
+        dependency: 'Organization(National Academy of Engineering)',
+        language: 'English (Z1002)',
+      },
+    }),
+  },
+  {
+    id: 'politicalParty',
+    informationLabel: 'Political party',
+    sectionId: 'career',
+    pattern: '[Person] is a member of [Party]',
+    helper: 'Political party membership. Built with a defining-role sentence.',
+    functionName: 'defining role sentence (monolingual)',
+    functionZid: 'Z28016',
+    searchKeywords: ['party', 'political party', 'democrat', 'republican', 'politics'],
+    wikidataProperty: 'P102 member of political party',
+    wikidataSuggestion: 'the Democratic Party',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      {
+        key: 'party',
+        label: 'Party',
+        placeholder: 'the Democratic Party',
+        wikidataSuggestion: 'the Democratic Party',
+      },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} is a member of ${values.party || 'the Democratic Party'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: 'defining role sentence (monolingual) (Z28016)',
+      arguments: {
+        subject: 'Entity(Steve Wozniak)',
+        role: 'Role(member)',
+        dependency: 'Organization(Democratic Party)',
+        language: 'English (Z1002)',
+      },
+    }),
+  },
+  {
+    id: 'languagesSpoken',
+    informationLabel: 'Languages spoken',
+    sectionId: 'lead',
+    pattern: '[Person] speaks [Language]',
+    helper: 'A language the person speaks. Built with a subject–verb–object sentence.',
+    functionName: '[X] [present verb] [Y], Multilingual',
+    functionZid: 'Z32702',
+    searchKeywords: ['speaks', 'language', 'languages', 'fluent', 'native language'],
+    wikidataProperty: 'P1412 languages spoken, written or signed',
+    wikidataSuggestion: 'English',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      {
+        key: 'language',
+        label: 'Language',
+        placeholder: 'English',
+        wikidataSuggestion: 'English',
+        suggestionSource: 'default',
+      },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} speaks ${values.language || 'English'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: '[X] [present verb] [Y], Multilingual (Z32702)',
+      arguments: {
+        subject: 'Entity(Steve Wozniak)',
+        verb: 'Verb(speak)',
+        object: 'Language(English)',
+        language: 'English (Z1002)',
+      },
+    }),
+  },
+  {
+    id: 'nickname',
+    informationLabel: 'Nickname',
+    sectionId: 'lead',
+    pattern: '[Person] is also known as [Nickname]',
+    helper: 'A nickname or alternate name.',
+    functionName: 'also known as',
+    functionZid: 'Z31261',
+    searchKeywords: ['nickname', 'also known as', 'alias', 'known as', 'called'],
+    wikidataProperty: 'P1449 nickname',
+    wikidataSuggestion: 'Woz',
+    fields: [
+      {
+        key: 'entity',
+        label: 'Person',
+        placeholder: articleSubject,
+        wikidataSuggestion: articleSubject,
+        suggestionSource: 'pageTitle',
+      },
+      {
+        key: 'nickname',
+        label: 'Nickname',
+        placeholder: 'Woz',
+        wikidataSuggestion: 'Woz',
+      },
+    ],
+    sentence: (values) =>
+      `${values.entity || articleSubject} is also known as ${values.nickname || 'Woz'}.`,
+    functionTree: composeFragmentTree({
+      type: 'Function call',
+      function: 'also known as (Z31261)',
+      arguments: {
+        subject: 'Entity(Steve Wozniak)',
+        nickname: 'Woz',
+      },
+    }),
+  },
+  {
     id: 'paragraph',
     kind: 'paragraph',
     addSearchOnly: true,
@@ -640,6 +1265,27 @@ export function defaultValuesFromWikidata(card: HybridCardDefinition): Record<st
   )
 }
 
+/** Demo values for search-result examples — never uses the live article subject name. */
+export const exampleArticleSubject = 'Alex'
+
+export function exampleValuesForCard(card: HybridCardDefinition): Record<string, string> {
+  return Object.fromEntries(
+    card.fields.map((field) => {
+      const raw = field.wikidataSuggestion ?? field.placeholder ?? ''
+      const isSubjectField =
+        field.suggestionSource === 'pageTitle' ||
+        field.key === 'entity' ||
+        field.key === 'person'
+
+      if (isSubjectField || raw === articleSubject || raw.startsWith(`${articleSubject} `)) {
+        return [field.key, exampleArticleSubject]
+      }
+
+      return [field.key, raw]
+    }),
+  )
+}
+
 export function createDefaultWebCitation(): WebCitation {
   return {
     url: 'https://www.britannica.com/biography/Steve-Wozniak',
@@ -740,6 +1386,172 @@ export const informationTypes: FactDefinition[] = [
     fieldLabel: 'Award',
     wikidataSuggestion: 'National Medal of Technology',
     sentence: (entity, value) => `${entity} received the ${value}.`,
+  },
+  {
+    id: 'whereFrom',
+    label: "Where they're from",
+    section: 'Introduction',
+    wikidataProperty: 'P106 occupation · P19 place of birth',
+    functionName: 'state origin using entity and class',
+    fieldLabel: 'Role and place',
+    wikidataSuggestion: 'engineer from San Jose',
+    sentence: (entity, value) => `${entity} is a ${value}.`,
+  },
+  {
+    id: 'citizenship',
+    label: 'Citizenship',
+    section: 'Introduction',
+    wikidataProperty: 'P27 country of citizenship',
+    functionName: 'defining role sentence (monolingual)',
+    fieldLabel: 'Country',
+    wikidataSuggestion: 'the United States',
+    sentence: (entity, value) => `${entity} is a citizen of ${value}.`,
+  },
+  {
+    id: 'workplace',
+    label: 'Workplace',
+    section: 'Career',
+    wikidataProperty: 'P108 employer',
+    functionName: '[X] [present verb] [Y], Multilingual',
+    fieldLabel: 'Organization',
+    wikidataSuggestion: 'Apple',
+    sentence: (entity, value) => `${entity} worked at ${value}.`,
+  },
+  {
+    id: 'publicOffice',
+    label: 'Public office',
+    section: 'Career',
+    wikidataProperty: 'P39 position held',
+    functionName: 'defining role sentence (monolingual)',
+    fieldLabel: 'Position',
+    wikidataSuggestion: 'President of the United States',
+    sentence: (entity, value) => `${entity} served as ${value}.`,
+  },
+  {
+    id: 'dateOfDeath',
+    label: 'Date of death',
+    section: 'Introduction',
+    wikidataProperty: 'P570 date of death',
+    functionName: '[name] died on [date] in [place], English',
+    fieldLabel: 'Date',
+    wikidataSuggestion: '15 March 44 BCE',
+    sentence: (entity, value) => `${entity} died on ${value}.`,
+  },
+  {
+    id: 'placeOfDeath',
+    label: 'Place of death',
+    section: 'Introduction',
+    wikidataProperty: 'P20 place of death',
+    functionName: '[name] died on [date] in [place], English',
+    fieldLabel: 'Place',
+    wikidataSuggestion: 'Rome',
+    sentence: (entity, value) => `${entity} died in ${value}.`,
+  },
+  {
+    id: 'notableWorksList',
+    label: 'List of notable works',
+    section: 'Career',
+    wikidataProperty: 'P800 notable work',
+    functionName: 'unordered list with item tagging',
+    fieldLabel: 'Works',
+    wikidataSuggestion: 'Apple I; Apple II; Breakout',
+    sentence: (_entity, value) =>
+      value
+        .split(';')
+        .map((work) => work.trim())
+        .filter(Boolean)
+        .map((work) => `• ${work}`)
+        .join(' '),
+  },
+  {
+    id: 'spouse',
+    label: 'Spouse / partner',
+    section: 'Early life',
+    wikidataProperty: 'P26 spouse',
+    functionName: 'he is married, English',
+    fieldLabel: 'Spouse or partner',
+    wikidataSuggestion: 'Janet Hill',
+    sentence: (entity, value) => `${entity} is married to ${value}.`,
+  },
+  {
+    id: 'child',
+    label: 'Child',
+    section: 'Early life',
+    wikidataProperty: 'P40 child',
+    functionName: 'defining role sentence (monolingual)',
+    fieldLabel: 'Child',
+    wikidataSuggestion: 'Chelsea Clinton',
+    sentence: (entity, value) => `${entity} is the parent of ${value}.`,
+  },
+  {
+    id: 'parent',
+    label: 'Parent',
+    section: 'Early life',
+    wikidataProperty: 'P22 father · P25 mother',
+    functionName: 'defining role sentence (monolingual)',
+    fieldLabel: 'Parent',
+    wikidataSuggestion: 'Virginia Clinton Kelley',
+    sentence: (entity, value) => `${entity} is the child of ${value}.`,
+  },
+  {
+    id: 'residence',
+    label: 'Residence',
+    section: 'Early life',
+    wikidataProperty: 'P551 residence',
+    functionName: '[X] [present verb] [Y], Multilingual',
+    fieldLabel: 'Place',
+    wikidataSuggestion: 'Chappaqua',
+    sentence: (entity, value) => `${entity} lives in ${value}.`,
+  },
+  {
+    id: 'fieldOfWork',
+    label: 'Field of work',
+    section: 'Career',
+    wikidataProperty: 'P101 field of work',
+    functionName: '[X] [present verb] [Y], Multilingual',
+    fieldLabel: 'Field',
+    wikidataSuggestion: 'electrical engineering',
+    sentence: (entity, value) => `${entity} works in ${value}.`,
+  },
+  {
+    id: 'memberOf',
+    label: 'Member of',
+    section: 'Career',
+    wikidataProperty: 'P463 member of',
+    functionName: 'defining role sentence (monolingual)',
+    fieldLabel: 'Organization',
+    wikidataSuggestion: 'the National Academy of Engineering',
+    sentence: (entity, value) => `${entity} is a member of ${value}.`,
+  },
+  {
+    id: 'politicalParty',
+    label: 'Political party',
+    section: 'Career',
+    wikidataProperty: 'P102 member of political party',
+    functionName: 'defining role sentence (monolingual)',
+    fieldLabel: 'Party',
+    wikidataSuggestion: 'the Democratic Party',
+    sentence: (entity, value) => `${entity} is a member of ${value}.`,
+  },
+  {
+    id: 'languagesSpoken',
+    label: 'Languages spoken',
+    section: 'Introduction',
+    wikidataProperty: 'P1412 languages spoken, written or signed',
+    functionName: '[X] [present verb] [Y], Multilingual',
+    fieldLabel: 'Language',
+    wikidataSuggestion: 'English',
+    sentence: (entity, value) => `${entity} speaks ${value}.`,
+  },
+  {
+    id: 'nickname',
+    label: 'Nickname',
+    section: 'Introduction',
+    wikidataProperty: 'P1449 nickname',
+    functionName: 'also known as',
+    fieldLabel: 'Nickname',
+    wikidataSuggestion: 'Woz',
+    sentence: (entity, value) => `${entity} is also known as ${value}.`,
   },
 ]
 
